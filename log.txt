@@ -1,0 +1,27 @@
+Attaching to mystore_api, mystore_repo
+[36mapi_1   |[0m 2023/03/11 12:46:11 pinging repo connection: failed to connect to `host=localhost user=delveper database=mystore`: dial error (dial tcp [::1]:2345: connect: cannot assign requested address)
+[33mrepo_1  |[0m 
+[33mrepo_1  |[0m PostgreSQL Database directory appears to contain a database; Skipping initialization
+[33mrepo_1  |[0m 
+[33mrepo_1  |[0m 2023-03-11 12:46:11.016 UTC [1] LOG:  starting PostgreSQL 15.2 on x86_64-pc-linux-musl, compiled by gcc (Alpine 12.2.1_git20220924-r4) 12.2.1 20220924, 64-bit
+[33mrepo_1  |[0m 2023-03-11 12:46:11.016 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+[33mrepo_1  |[0m 2023-03-11 12:46:11.016 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+[33mrepo_1  |[0m 2023-03-11 12:46:11.025 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+[33mrepo_1  |[0m 2023-03-11 12:46:11.045 UTC [27] LOG:  database system was shut down at 2023-03-11 12:44:16 UTC
+[33mrepo_1  |[0m 2023-03-11 12:46:11.052 UTC [1] LOG:  database system is ready to accept connections
+[33mrepo_1  |[0m 2023-03-11 12:46:41.096 UTC [31] WARNING:  database "template1" has no actual collation version, but a version was recorded
+[33mrepo_1  |[0m 2023-03-11 12:47:11.072 UTC [32] WARNING:  database "postgres" has no actual collation version, but a version was recorded
+[36mmystore_api exited with code 1
+[0m[33mrepo_1  |[0m 2023-03-11 12:47:41.115 UTC [33] WARNING:  database "template1" has no actual collation version, but a version was recorded
+[33mrepo_1  |[0m 2023-03-11 12:48:11.069 UTC [34] WARNING:  database "postgres" has no actual collation version, but a version was recorded
+[33mrepo_1  |[0m 2023-03-11 12:48:26.724 UTC [35] WARNING:  database "mystore" has no actual collation version, but a version was recorded
+[33mrepo_1  |[0m 2023-03-11 12:48:41.145 UTC [36] WARNING:  database "mystore" has no actual collation version, but a version was recorded
+[33mrepo_1  |[0m 2023-03-11 12:48:47.703 UTC [37] WARNING:  database "mystore" has no actual collation version, but a version was recorded
+[33mrepo_1  |[0m 2023-03-11 12:48:49.534 UTC [38] WARNING:  database "mystore" has no actual collation version, but a version was recorded
+[33mrepo_1  |[0m 2023-03-11 12:49:01.146 UTC [39] WARNING:  database "template1" has no actual collation version, but a version was recorded
+[33mrepo_1  |[0m 2023-03-11 12:49:21.245 UTC [40] WARNING:  database "postgres" has no actual collation version, but a version was recorded
+[33mrepo_1  |[0m 2023-03-11 12:49:41.149 UTC [41] WARNING:  database "mystore" has no actual collation version, but a version was recorded
+[33mrepo_1  |[0m 2023-03-11 12:50:01.153 UTC [42] WARNING:  database "template1" has no actual collation version, but a version was recorded
+[33mrepo_1  |[0m 2023-03-11 12:50:21.248 UTC [43] WARNING:  database "postgres" has no actual collation version, but a version was recorded
+[33mrepo_1  |[0m 2023-03-11 12:50:31.255 UTC [44] WARNING:  database "mystore" has no actual collation version, but a version was recorded
+[33mrepo_1  |[0m 2023-03-11 12:50:41.149 UTC [45] WARNING:  database "mystore" has no actual collation version, but a version was recorded

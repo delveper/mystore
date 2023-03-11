@@ -2,10 +2,10 @@ version: "3.9"
 
 services:
   # MAIN REPO
-  ${DB_NAME}:
-    image: postgres:15.1-alpine3.17
+  repo:
+    image: ${DB_IMAGE}
     restart: always
-    container_name: ${APP_NAME}_${DB_NAME}
+    container_name: ${APP_NAME}_repo
     ports:
       - ${DB_EXPOSE_PORT}:${DB_PORT}
     environment:
@@ -13,9 +13,9 @@ services:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
-      - ${DB_NAME}_data:${DB_DATA}
+      - repo_data:${DB_DATA}
     networks:
-      - ${NETWORK_NAME}
+      - mystore
   # API
   api:
     build: .
@@ -24,13 +24,13 @@ services:
     ports:
       - ${SRV_PORT}:${SRV_PORT}
     depends_on:
-      - ${DB_NAME}
+      - repo
     networks:
-      - ${NETWORK_NAME}
-
+      - mystore
+# VOLUMES
 volumes:
-  ${DB_NAME}_data:
-
+  repo_data:
+#NETWORKS
 networks:
-  ${NETWORK_NAME}:
+  mystore:
     driver: bridge
