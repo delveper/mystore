@@ -1,2 +1,2 @@
 bench:
-	 go test ./cmd/str/ -bench=. -benchmem
+	 go test ./cmd/concat/ -bench=. -benchmem

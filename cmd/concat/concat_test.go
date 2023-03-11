@@ -1,4 +1,4 @@
-package main
+package concat
 
 import (
 	_ "embed"
@@ -17,7 +17,7 @@ func BenchmarkConcat(b *testing.B) {
 
 }
 
-func BenchmarkConcatStringsBuilder(b *testing.B) {
+func BenchmarkStringsBuilder(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		concatStringsBuilder(testStr)
 	}
