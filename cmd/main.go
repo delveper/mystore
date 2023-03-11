@@ -3,13 +3,13 @@ package main
 import (
 	"log"
 
-	"github.com/delveper/mystore/app/repository"
+	"github.com/delveper/mystore/app/repository/psql"
 	"github.com/delveper/mystore/lib/env"
 	"github.com/delveper/mystore/lib/lgr"
 )
 
 func main() {
-	// Load .env to environment
+	// Load .env to environment, in case of running locally
 	if err := env.LoadVars(); err != nil {
 		log.Fatal(err)
 	}
@@ -18,7 +18,7 @@ func main() {
 	log := lgr.New()
 
 	// Database connection
-	db, err := repository.Connect()
+	db, err := psql.Connect()
 	if err != nil {
 		log.Fatalf("Failed establishing database connection: %v", err)
 	}

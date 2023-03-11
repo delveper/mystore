@@ -14,6 +14,7 @@ services:
       - POSTGRES_PASSWORD=${DB_PASSWORD}
     volumes:
       - repo_data:${DB_DATA}
+      - ${DB_INIT_SCHEMA}:/docker-entrypoint-initdb.d/init.sql
     networks:
       - mystore
   # API

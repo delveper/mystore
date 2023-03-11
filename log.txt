@@ -31,4 +31,15 @@ CREATE TABLE order (
   quantity INT NOT NULL,
   total_price DECIMAL(10, 2) NOT NULL,
   created_at TIMESTAMP DEFAULT NOW()
-);
+);Attaching to mystore_api, mystore_repo
+
+[36mapi_1   |[0m 2023-03-12T04:00:14.946Z	[31mFATAL[0m	Failed establishing database connection: pinging repo connection: failed to connect to `host=localhost user=delveper database=mystore`: dial error (dial tcp [::1]:2345: connect: cannot assign requested address)
+[33mrepo_1  |[0m 
+[33mrepo_1  |[0m PostgreSQL Database directory appears to contain a database; Skipping initialization
+[33mrepo_1  |[0m 
+[33mrepo_1  |[0m 2023-03-12 04:00:14.465 UTC [1] LOG:  starting PostgreSQL 15.2 on x86_64-pc-linux-musl, compiled by gcc (Alpine 12.2.1_git20220924-r4) 12.2.1 20220924, 64-bit
+[33mrepo_1  |[0m 2023-03-12 04:00:14.465 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+[33mrepo_1  |[0m 2023-03-12 04:00:14.465 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+[33mrepo_1  |[0m 2023-03-12 04:00:14.476 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+[33mrepo_1  |[0m 2023-03-12 04:00:14.489 UTC [26] LOG:  database system was shut down at 2023-03-12 04:00:00 UTC
+[33mrepo_1  |[0m 2023-03-12 04:00:14.495 UTC [1] LOG:  database system is ready to accept connections
