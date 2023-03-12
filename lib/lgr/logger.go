@@ -79,7 +79,7 @@ func getJSONCore() zapcore.Core {
 	)
 }
 
-func New() Logger {
+func New() *Logger {
 	cores := []zapcore.Core{
 		getConsoleCore(),
 		getJSONCore(),
@@ -87,5 +87,5 @@ func New() Logger {
 
 	core := zapcore.NewTee(cores...)
 
-	return Logger{zap.New(core).Sugar()}
+	return &Logger{zap.New(core).Sugar()}
 }
