@@ -15,51 +15,52 @@ API based on REST and Clean Architecture principles.
 ```mermaid
 erDiagram
     merchants {
-        Int id PK
-        String merchant_name
-        Int phone
-        String password
-        String email
+        int id PK
+        string merchant_name
+        int phone
+        string password
+        string email
         timestamp created_at
     }
 
-    buyers {
-        Int id PK
-        String full_name
-        Int phone
-        String email
-        String password
+    customers {
+        int id PK
+        string full_name
+        int phone
+        string email
+        string password
         timestamp created_at
     }
 
     products {
-        Int id PK
-        Int merchant_id FK
-        String name
-        Text description
-        BigInt price
+        int id PK
+        int merchant_id FK
+        string name
+        text description
+        bigint price
         products_status status
         timestamp created_at
     }
 
     orders {
-        Int id PK
-        Int buyer_id FK
+        int id PK
+        int customer_id FK
         order_status status
         timestamp created_at
         timestamp deleted_at
     }
 
     order_items {
-        Int order_id FK
-        Int product_id FK
-        Int quantity
+        int order_id FK
+        int product_id FK
+        int quantity
+        int price
     }
 
     merchants ||--o{ products : has
-    buyers ||--o{ orders : make
-    orders ||--o{ order_items : in 
-    products ||--o{ order_items : in
+    customers ||--o{ orders : places 
+    orders ||--|{ order_items : contains 
+    products ||--|{ order_items :contains 
 ```
 
 ## Endpoints
@@ -69,7 +70,7 @@ This approach makes API more organized and easier to navigate for clients and al
 resources.
 
 - `/api/merchants/:id/products`
-- `/api/buyers/:id/orders`
+- `/api/customers/:id/orders`
 - `/api/orders/:id/items`
 - etc.
 
@@ -90,11 +91,11 @@ Flattened structure will look like this.
 | `/products/:id`  | `GET`    | Returns the product by id               |
 | `/products/:id`  | `PUT`    | Updates the product by id               |
 | `/products/:id`  | `DELETE` | Deletes the product by id               |
-| `/buyers`        | `POST`   | Creates a new buyer                     |
-| `/buyers`        | `GET`    | Fetches a list of all buyers            |
-| `/buyers/:id`    | `GET`    | Returns the buyer by id                 |
-| `/buyers/:id`    | `PUT`    | Updates the buyer by id                 |
-| `/buyers/:id`    | `DELETE` | Deletes the buyer by id                 |
+| `/customers`     | `POST`   | Creates a new customer                  |
+| `/customers`     | `GET`    | Fetches a list of all customers         |
+| `/customers/:id` | `GET`    | Returns the customer by id              |
+| `/customers/:id` | `PUT`    | Updates the customer by id              |
+| `/customers/:id` | `DELETE` | Deletes the customer by id              |
 | `/orders`        | `POST`   | Creates a new order                     |
 | `/orders`        | `GET`    | Fetches a list of all orders            |
 | `/orders/:id`    | `GET`    | Returns the order by id                 |

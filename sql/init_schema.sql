@@ -16,7 +16,7 @@ CREATE TABLE merchants
     created_at    TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
 );
 
-CREATE TABLE buyers
+CREATE TABLE customers
 (
     id         SERIAL PRIMARY KEY,
     full_name  VARCHAR(255),
@@ -45,7 +45,7 @@ CREATE INDEX IF NOT EXISTS product_name ON products USING GIN (to_tsvector('simp
 CREATE TABLE orders
 (
     id         SERIAL PRIMARY key,
-    buyer_id   INT NOT NULL REFERENCES buyers (id),
+    customer_id   INT NOT NULL REFERENCES customers (id),
     status     order_status,
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
     deleted_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL
@@ -55,5 +55,6 @@ CREATE TABLE order_items
 (
     order_id   SERIAL REFERENCES orders (id) ON DELETE CASCADE,
     product_id SERIAL REFERENCES products (id) ON DELETE CASCADE,
-    quantity   INT DEFAULT 1
+    quantity   INT DEFAULT 1,
+    price      BIGINT
 );
