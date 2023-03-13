@@ -12,7 +12,15 @@ func ChainMiddlewares(hdl http.Handler, middlewares ...func(http.Handler) http.H
 	return hdl
 }
 
-func WithCORS(h http.HandlerFunc) http.HandlerFunc {
+func WithJSON(hdl http.HandlerFunc) http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
+		rw.Header().Set("Content-Type", "application/json; charset=UTF-8")
+
+		hdl(rw, req)
+	}
+}
+
+func WithCORS(hdl http.HandlerFunc) http.HandlerFunc {
 	return func(rw http.ResponseWriter, req *http.Request) {
 		rw.Header().Set("Access-Control-Allow-Origin", "*")
 		rw.Header().Set("Access-Control-Allow-Credentials", "true")
@@ -24,6 +32,29 @@ func WithCORS(h http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		h(rw, req)
+		hdl(rw, req)
+	}
+}
+
+func WithAuth(hdl http.HandlerFunc) http.HandlerFunc {
+	return func(rw http.ResponseWriter, req *http.Request) {
+		username, password, ok := req.BasicAuth()
+		if !ok {
+			rw.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+			rw.WriteHeader(http.StatusUnauthorized)
+
+			return
+		}
+
+		_, _ = username, password
+
+		if false {
+			rw.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+			rw.WriteHeader(http.StatusUnauthorized)
+
+			return
+		}
+
+		hdl(rw, req)
 	}
 }

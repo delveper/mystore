@@ -35,16 +35,15 @@ func main() {
 		// to be continue...
 	)
 
-	// Run server
-	srv, err := rest.NewServer(mux)
+	// Serve server
+	srv, err := rest.NewServer(mux, log)
 	if err != nil {
 		log.Fatalf("Failed creating server: %v", err)
 	}
 
 	log.Infof("Server is starting on port %v", os.Getenv("SRV_PORT"))
 
-	if err := srv.ListenAndServe(); err != nil {
-		log.Fatalf("Failed running server: %v", err)
+	if err := srv.Serve(); err != nil {
+		log.Errorf("Failed running server: %v", err)
 	}
-
 }

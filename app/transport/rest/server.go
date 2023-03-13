@@ -1,14 +1,25 @@
 package rest
 
 import (
+	"context"
 	"fmt"
+	"os/signal"
 
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/delveper/mystore/lib/lgr"
 )
 
-func NewServer(hdl http.Handler) (*http.Server, error) {
+const defaultTimeout = 15 * time.Second
+
+type Server struct {
+	srv *http.Server
+	log *lgr.Logger
+}
+
+func NewServer(hdl http.Handler, log *lgr.Logger) (*Server, error) {
 	addr := os.Getenv("SRV_HOST") + ":" + os.Getenv("SRV_PORT")
 
 	readTimeout, err := time.ParseDuration(os.Getenv("SRV_READ_TIMEOUT"))
@@ -26,7 +37,7 @@ func NewServer(hdl http.Handler) (*http.Server, error) {
 		return nil, fmt.Errorf("parse idle timeout: %w", err)
 	}
 
-	srv := http.Server{
+	srv := &http.Server{
 		Addr:         addr,
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
@@ -34,5 +45,31 @@ func NewServer(hdl http.Handler) (*http.Server, error) {
 		Handler:      hdl,
 	}
 
-	return &srv, nil
+	return &Server{
+		srv: srv,
+		log: log,
+	}, nil
+}
+
+func (s *Server) Serve() (err error) {
+	go func() {
+		if e := s.srv.ListenAndServe(); e != nil {
+			err = fmt.Errorf("serving: %v", err)
+		}
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	<-c
+
+	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
+	defer cancel()
+
+	if e := s.srv.Shutdown(ctx); e != nil {
+		err = fmt.Errorf("shutting down server: %v", err)
+	}
+
+	s.log.Info("Shutting down gracefully.")
+
+	return
 }

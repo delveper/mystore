@@ -1,12 +1,17 @@
 package rest
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/delveper/mystore/lib/lgr"
 )
 
-const productPath = "/products"
+type contextKey int
+
+const contextKeyID contextKey = iota + 1
+
+const productPath = "/products/"
 
 type Product struct {
 	logger *lgr.Logger
@@ -43,16 +48,20 @@ func (p *Product) Delete(rw http.ResponseWriter, req *http.Request) {
 
 func (p *Product) HandleEndpoint(mux *http.ServeMux) {
 	hdl := func(rw http.ResponseWriter, req *http.Request) {
-		p.logger.Debug(req.Method)
+		id, hasID := getPathID(req.URL.Path)
+
+		if hasID {
+			ctx := context.WithValue(req.Context(), contextKeyID, id)
+			*req = *req.WithContext(ctx)
+		}
 
 		switch req.Method {
-
 		case http.MethodPost:
 			p.Create(rw, req)
 
 		case http.MethodGet:
-			if _, ok := getPathID(req.URL.Path); ok {
-				p.Read(rw, req) // it's possible to send parsed id via ctx
+			if hasID {
+				p.Read(rw, req)
 			} else {
 				p.ReadAll(rw, req)
 			}
@@ -64,15 +73,9 @@ func (p *Product) HandleEndpoint(mux *http.ServeMux) {
 			p.Delete(rw, req)
 
 		default:
-			respondHTTPErr(rw, req, http.StatusNotFound)
+			respondHTTPErr(rw, req, http.StatusMethodNotAllowed)
 		}
 	}
 
 	mux.HandleFunc(productPath, hdl)
 }
-
-/*
-func (p *Product) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-
-}
-*/

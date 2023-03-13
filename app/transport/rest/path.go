@@ -2,28 +2,16 @@ package rest
 
 import (
 	"path"
-	"regexp"
-	"strings"
+	"strconv"
 )
 
-func getPathID(path string) (string, bool) {
-	re := regexp.MustCompile("(?:/)([[:digit:]]+)$")
+func getPathID(pth string) (id int, ok bool) {
+	base := path.Base(path.Clean(pth))
 
-	if match := re.FindStringSubmatch(path); len(match) == 2 {
-		return match[1], true
+	id, err := strconv.Atoi(base)
+	if err != nil {
+		return 0, false
 	}
 
-	return "", false
-}
-
-// ShiftPath splits off the first component of p, which will be cleaned of
-// relative components before processing. head will never contain a slash and
-// tail will always be a rooted path without trailing slash.
-func ShiftPath(p string) (head, tail string) {
-	p = path.Clean("/" + p)
-	i := strings.Index(p[1:], "/") + 1
-	if i <= 0 {
-		return p[1:], "/"
-	}
-	return p[1:i], p[i:]
+	return id, true
 }
