@@ -58,7 +58,8 @@ erDiagram
 
     merchants ||--o{ products : has
     buyers ||--o{ orders : make
-    products ||--o{ order_items : has
+    orders ||--o{ order_items : in 
+    products ||--o{ order_items : in
 ```
 
 ## Endpoints
