@@ -8,9 +8,7 @@ import (
 	"time"
 )
 
-type Server struct{ *http.Server }
-
-func NewServer(hdl http.Handler) (*Server, error) {
+func NewServer(hdl http.Handler) (*http.Server, error) {
 	addr := os.Getenv("SRV_HOST") + ":" + os.Getenv("SRV_PORT")
 
 	readTimeout, err := time.ParseDuration(os.Getenv("SRV_READ_TIMEOUT"))
@@ -28,7 +26,7 @@ func NewServer(hdl http.Handler) (*Server, error) {
 		return nil, fmt.Errorf("parse idle timeout: %w", err)
 	}
 
-	srv := &http.Server{
+	srv := http.Server{
 		Addr:         addr,
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
@@ -36,13 +34,5 @@ func NewServer(hdl http.Handler) (*Server, error) {
 		Handler:      hdl,
 	}
 
-	return &Server{srv}, nil
-}
-
-func (srv *Server) Run() error {
-	if err := srv.ListenAndServe(); err != nil {
-		return fmt.Errorf("run the server: %w", err)
-	}
-
-	return nil
+	return &srv, nil
 }

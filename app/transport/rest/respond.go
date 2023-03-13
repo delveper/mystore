@@ -6,18 +6,18 @@ import (
 	"net/http"
 )
 
-func decodeBody(req *http.Request, val any) error {
+func decodeBody(req *http.Request, data any) error {
 	defer req.Body.Close()
 
-	if err := json.NewDecoder(req.Body).Decode(val); err != nil {
+	if err := json.NewDecoder(req.Body).Decode(data); err != nil {
 		return fmt.Errorf("decoding request body: %w", err)
 	}
 
 	return nil
 }
 
-func encodeBody(rw http.ResponseWriter, val any) error {
-	if err := json.NewEncoder(rw).Encode(val); err != nil {
+func encodeBody(rw http.ResponseWriter, data any) error {
+	if err := json.NewEncoder(rw).Encode(data); err != nil {
 		return fmt.Errorf("encoding body: %w", err)
 	}
 

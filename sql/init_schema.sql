@@ -44,7 +44,7 @@ CREATE INDEX IF NOT EXISTS product_name ON products USING GIN (to_tsvector('simp
 
 CREATE TABLE orders
 (
-    id         SERIAL PRIMARY KEY,
+    id         SERIAL PRIMARY key,
     buyer_id   INT NOT NULL REFERENCES buyers (id),
     status     order_status,
     created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),

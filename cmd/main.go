@@ -27,9 +27,10 @@ func main() {
 
 	_ = db
 
+	// Mux handlers
 	prod := rest.NewProduct(log)
 
-	mux := rest.NewRouter(
+	mux := rest.NewMux(
 		prod.HandleEndpoint,
 		// to be continue...
 	)
@@ -40,9 +41,9 @@ func main() {
 		log.Fatalf("Failed creating server: %v", err)
 	}
 
-	log.Infof("Server is startign on port %v", os.Getenv("SRV_PORT"))
+	log.Infof("Server is starting on port %v", os.Getenv("SRV_PORT"))
 
-	if err := srv.Run(); err != nil {
+	if err := srv.ListenAndServe(); err != nil {
 		log.Fatalf("Failed running server: %v", err)
 	}
 

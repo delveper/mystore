@@ -17,28 +17,34 @@ func NewProduct(logger *lgr.Logger) Product {
 }
 
 func (p *Product) Create(rw http.ResponseWriter, req *http.Request) {
-	p.logger.Info("bla bla bla")
+	p.logger.Info("Create")
 	respondErr(rw, req, http.StatusInternalServerError, ErrNotImplemented)
 }
 
 func (p *Product) Read(rw http.ResponseWriter, req *http.Request) {
+	p.logger.Info("Read")
 	respondErr(rw, req, http.StatusInternalServerError, ErrNotImplemented)
 }
 
 func (p *Product) ReadAll(rw http.ResponseWriter, req *http.Request) {
+	p.logger.Info("ReadAll")
 	respondErr(rw, req, http.StatusInternalServerError, ErrNotImplemented)
 }
 
 func (p *Product) Update(rw http.ResponseWriter, req *http.Request) {
+	p.logger.Info("Update")
 	respondErr(rw, req, http.StatusInternalServerError, ErrNotImplemented)
 }
 
 func (p *Product) Delete(rw http.ResponseWriter, req *http.Request) {
+	p.logger.Info("Delete")
 	respondErr(rw, req, http.StatusInternalServerError, ErrNotImplemented)
 }
 
-func (p *Product) HandleEndpoint(mux *Mux) {
+func (p *Product) HandleEndpoint(mux *http.ServeMux) {
 	hdl := func(rw http.ResponseWriter, req *http.Request) {
+		p.logger.Debug(req.Method)
+
 		switch req.Method {
 
 		case http.MethodPost:
@@ -64,3 +70,9 @@ func (p *Product) HandleEndpoint(mux *Mux) {
 
 	mux.HandleFunc(productPath, hdl)
 }
+
+/*
+func (p *Product) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+
+}
+*/
