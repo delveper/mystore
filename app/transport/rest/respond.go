@@ -31,7 +31,7 @@ func encodeBody(rw http.ResponseWriter, data any) error {
 	return nil
 }
 
-func respond(rw http.ResponseWriter, req *http.Request, code int, data any) {
+func respond(rw http.ResponseWriter, code int, data any) {
 	rw.WriteHeader(code)
 
 	if err, ok := data.(error); ok {
@@ -39,14 +39,14 @@ func respond(rw http.ResponseWriter, req *http.Request, code int, data any) {
 	}
 
 	if data == nil && code != http.StatusNoContent {
-		respond(rw, req, http.StatusBadRequest, exceptions.ErrInvalidData)
+		respond(rw, http.StatusBadRequest, exceptions.ErrInvalidData)
 
 		return
 	}
 
 	if data != nil {
 		if err := encodeBody(rw, data); err != nil {
-			respond(rw, req, http.StatusInternalServerError, err)
+			respond(rw, http.StatusInternalServerError, err)
 		}
 	}
 }

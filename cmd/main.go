@@ -28,7 +28,7 @@ func main() {
 	_ = db
 
 	// Mux handlers
-	prod := rest.NewProduct(logger)
+	prod := rest.NewProduct(nil, logger)
 
 	mux := rest.NewMux(
 		prod.Route,
@@ -38,7 +38,9 @@ func main() {
 	// Chain Middleware
 	hdl := rest.ChainMiddlewares(mux,
 		rest.WithLogRequest(logger),
+		rest.WithAuth,
 		rest.WithJSON,
+		rest.WithCORS,
 	)
 
 	// Serve server
@@ -47,8 +49,8 @@ func main() {
 		logger.Fatalf("Failed creating server: %v", err)
 	}
 
-	port := os.Getenv("SRV_PORT")
-	logger.Infof("Server is starting on port %v", port)
+	addr := os.Getenv("SRV_PORT")
+	logger.Infof("Server is starting on port %v", addr)
 
 	if err := srv.Serve(); err != nil {
 		logger.Errorf("Failed running server: %v", err)

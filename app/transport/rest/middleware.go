@@ -18,7 +18,6 @@ func ChainMiddlewares(hdl http.Handler, middlewares ...func(http.Handler) http.H
 func WithJSON(hdl http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.Header().Set("Content-Type", "application/json; charset=UTF-8")
-
 		hdl.ServeHTTP(rw, req)
 	})
 }
@@ -32,26 +31,18 @@ func WithCORS(hdl http.Handler) http.Handler {
 
 		if req.Method == "OPTIONS" {
 			respond(rw, req, http.StatusNoContent, nil)
+
 			return
 		}
 
 		hdl.ServeHTTP(rw, req)
 	})
 }
-func isAdmin(userName, password string) bool {
-	return true
-}
 
 func WithAuth(hdl http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		userName, password, ok := req.BasicAuth()
-		if !ok {
-			rw.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			respond(rw, req, http.StatusUnauthorized, exceptions.ErrNotAuthorized)
-			return
-		}
-
-		if isAdmin(userName, password) {
+		if !ok || !isAuth(userName, password) {
 			rw.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
 			respond(rw, req, http.StatusUnauthorized, exceptions.ErrNotAuthorized)
 
