@@ -4,7 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/delveper/mystore/app/exceptions"
 )
+
+type Response struct {
+	Message string `json:"message"`
+	Details string `json:"details,omitempty"`
+}
 
 func decodeBody(req *http.Request, data any) error {
 	defer req.Body.Close()
@@ -27,21 +34,19 @@ func encodeBody(rw http.ResponseWriter, data any) error {
 func respond(rw http.ResponseWriter, req *http.Request, code int, data any) {
 	rw.WriteHeader(code)
 
+	if err, ok := data.(error); ok {
+		data = Response{Message: http.StatusText(code), Details: err.Error()}
+	}
+
+	if data == nil && code != http.StatusNoContent {
+		respond(rw, req, http.StatusBadRequest, exceptions.ErrInvalidData)
+
+		return
+	}
+
 	if data != nil {
 		if err := encodeBody(rw, data); err != nil {
-			respondErr(rw, req, http.StatusInternalServerError)
+			respond(rw, req, http.StatusInternalServerError, err)
 		}
 	}
-}
-
-func respondErr(rw http.ResponseWriter, req *http.Request, code int, args ...any) {
-	respond(rw, req, code, map[string]any{
-		"error": map[string]any{
-			"message": fmt.Sprint(args...),
-		},
-	})
-}
-
-func respondHTTPErr(rw http.ResponseWriter, req *http.Request, code int) {
-	respondErr(rw, req, code, http.StatusText(code))
 }
