@@ -2,7 +2,9 @@ package rest
 
 import (
 	"context"
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/delveper/mystore/lib/lgr"
 )
@@ -14,68 +16,67 @@ const contextKeyID contextKey = iota + 1
 const productPath = "/products/"
 
 type Product struct {
-	logger *lgr.Logger
+	logger lgr.Logger
 }
 
-func NewProduct(logger *lgr.Logger) Product {
+func NewProduct(logger lgr.Logger) Product {
 	return Product{logger: logger}
 }
 
-func (p *Product) Create(rw http.ResponseWriter, req *http.Request) {
-	p.logger.Info("Create")
-	respondErr(rw, req, http.StatusInternalServerError, ErrNotImplemented)
+func (p *Product) create(rw http.ResponseWriter, req *http.Request) {
+	respondErr(rw, req, http.StatusInternalServerError, errors.New("create"))
 }
 
-func (p *Product) Read(rw http.ResponseWriter, req *http.Request) {
-	p.logger.Info("Read")
-	respondErr(rw, req, http.StatusInternalServerError, ErrNotImplemented)
+func (p *Product) read(rw http.ResponseWriter, req *http.Request) {
+	respondErr(rw, req, http.StatusInternalServerError, errors.New("read"))
 }
 
-func (p *Product) ReadAll(rw http.ResponseWriter, req *http.Request) {
-	p.logger.Info("ReadAll")
-	respondErr(rw, req, http.StatusInternalServerError, ErrNotImplemented)
+func (p *Product) readAll(rw http.ResponseWriter, req *http.Request) {
+	respondErr(rw, req, http.StatusInternalServerError, errors.New("read all"))
 }
 
-func (p *Product) Update(rw http.ResponseWriter, req *http.Request) {
-	p.logger.Info("Update")
-	respondErr(rw, req, http.StatusInternalServerError, ErrNotImplemented)
+func (p *Product) update(rw http.ResponseWriter, req *http.Request) {
+	respondErr(rw, req, http.StatusInternalServerError, errors.New("update"))
 }
 
-func (p *Product) Delete(rw http.ResponseWriter, req *http.Request) {
-	p.logger.Info("Delete")
-	respondErr(rw, req, http.StatusInternalServerError, ErrNotImplemented)
+func (p *Product) delete(rw http.ResponseWriter, req *http.Request) {
+	respondErr(rw, req, http.StatusInternalServerError, errors.New("delete"))
 }
 
-func (p *Product) HandleEndpoint(mux *http.ServeMux) {
-	hdl := func(rw http.ResponseWriter, req *http.Request) {
-		id, hasID := getPathID(req.URL.Path)
-
-		if hasID {
-			ctx := context.WithValue(req.Context(), contextKeyID, id)
-			*req = *req.WithContext(ctx)
-		}
-
+func (p *Product) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if req.URL.Path == "" {
 		switch req.Method {
 		case http.MethodPost:
-			p.Create(rw, req)
-
+			p.create(rw, req)
 		case http.MethodGet:
-			if hasID {
-				p.Read(rw, req)
-			} else {
-				p.ReadAll(rw, req)
-			}
-
-		case http.MethodPut:
-			p.Update(rw, req)
-
-		case http.MethodDelete:
-			p.Delete(rw, req)
-
+			p.readAll(rw, req)
 		default:
-			respondHTTPErr(rw, req, http.StatusMethodNotAllowed)
+			respondErr(rw, req, http.StatusMethodNotAllowed)
 		}
+		return
 	}
 
-	mux.HandleFunc(productPath, hdl)
+	id, err := strconv.Atoi(req.URL.Path)
+	if err != nil {
+		respondErr(rw, req, http.StatusNotFound)
+		return
+	}
+
+	ctx := context.WithValue(req.Context(), contextKeyID, id)
+	req = req.WithContext(ctx)
+
+	switch req.Method {
+	case http.MethodGet:
+		p.read(rw, req)
+	case http.MethodPut:
+		p.update(rw, req)
+	case http.MethodDelete:
+		p.delete(rw, req)
+	default:
+		respondErr(rw, req, http.StatusMethodNotAllowed)
+	}
+}
+
+func (p *Product) Route(mux *http.ServeMux) {
+	mux.Handle(productPath, http.StripPrefix(productPath, p))
 }

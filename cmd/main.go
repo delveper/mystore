@@ -17,33 +17,40 @@ func main() {
 	}
 
 	// Logger
-	log := lgr.New()
+	logger := lgr.New()
 
 	// Database connection
 	db, err := psql.Connect()
 	if err != nil {
-		log.Fatalf("Failed establishing database connection: %v", err)
+		logger.Fatalf("Failed establishing database connection: %v", err)
 	}
 
 	_ = db
 
 	// Mux handlers
-	prod := rest.NewProduct(log)
+	prod := rest.NewProduct(logger)
 
 	mux := rest.NewMux(
-		prod.HandleEndpoint,
+		prod.Route,
 		// to be continue...
 	)
 
+	// Chain Middleware
+	hdl := rest.ChainMiddlewares(mux,
+		rest.WithLogRequest(logger),
+		rest.WithJSON,
+	)
+
 	// Serve server
-	srv, err := rest.NewServer(mux, log)
+	srv, err := rest.NewServer(hdl, logger)
 	if err != nil {
-		log.Fatalf("Failed creating server: %v", err)
+		logger.Fatalf("Failed creating server: %v", err)
 	}
 
-	log.Infof("Server is starting on port %v", os.Getenv("SRV_PORT"))
+	port := os.Getenv("SRV_PORT")
+	logger.Infof("Server is starting on port %v", port)
 
 	if err := srv.Serve(); err != nil {
-		log.Errorf("Failed running server: %v", err)
+		logger.Errorf("Failed running server: %v", err)
 	}
 }

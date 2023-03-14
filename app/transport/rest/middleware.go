@@ -2,26 +2,28 @@ package rest
 
 import (
 	"net/http"
+
+	"github.com/delveper/mystore/lib/lgr"
 )
 
-func ChainMiddlewares(hdl http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
-	for i := len(middlewares) - 1; i >= 0; i-- { // LIFO order
-		hdl = middlewares[i](hdl)
+func ChainMiddlewares(hdl http.Handler, mds ...func(http.Handler) http.Handler) http.Handler {
+	for i := len(mds) - 1; i >= 0; i-- { // LIFO order
+		hdl = mds[i](hdl)
 	}
 
 	return hdl
 }
 
-func WithJSON(hdl http.HandlerFunc) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
+func WithJSON(hdl http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-		hdl(rw, req)
-	}
+		hdl.ServeHTTP(rw, req)
+	})
 }
 
-func WithCORS(hdl http.HandlerFunc) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
+func WithCORS(hdl http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.Header().Set("Access-Control-Allow-Origin", "*")
 		rw.Header().Set("Access-Control-Allow-Credentials", "true")
 		rw.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
@@ -32,12 +34,12 @@ func WithCORS(hdl http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		hdl(rw, req)
-	}
+		hdl.ServeHTTP(rw, req)
+	})
 }
 
-func WithAuth(hdl http.HandlerFunc) http.HandlerFunc {
-	return func(rw http.ResponseWriter, req *http.Request) {
+func WithAuth(hdl http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		username, password, ok := req.BasicAuth()
 		if !ok {
 			rw.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
@@ -55,6 +57,22 @@ func WithAuth(hdl http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		hdl(rw, req)
+		hdl.ServeHTTP(rw, req)
+	})
+}
+
+// WithLogRequest logs every request and sends logger instance to further handler.
+func WithLogRequest(logger lgr.Logger) func(http.Handler) http.Handler {
+	return func(hdl http.Handler) http.Handler {
+		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			logger.Debugw("Request:",
+				"method", req.Method,
+				"uri", req.RequestURI,
+				"user-agent", req.UserAgent(),
+				"remote", req.RemoteAddr,
+			)
+
+			hdl.ServeHTTP(rw, req)
+		})
 	}
 }

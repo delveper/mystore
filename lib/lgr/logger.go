@@ -3,6 +3,7 @@ package lgr
 import (
 	"log"
 	"os"
+	"strings"
 
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -18,7 +19,8 @@ const (
 type Logger struct{ *zap.SugaredLogger }
 
 func getLevel() zapcore.Level {
-	switch os.Getenv("LOG_LEVEL") {
+	lvl := os.Getenv("LOG_LEVEL")
+	switch strings.ToUpper(lvl) {
 	case DebugLevel:
 		return zapcore.DebugLevel
 	case InfoLevel:
@@ -43,7 +45,7 @@ func getEncoderConfig() zapcore.EncoderConfig {
 		StacktraceKey:       "stacktrace",
 		SkipLineEnding:      false,
 		LineEnding:          "\n",
-		EncodeLevel:         zapcore.CapitalColorLevelEncoder,
+		EncodeLevel:         zapcore.CapitalLevelEncoder,
 		EncodeTime:          zapcore.ISO8601TimeEncoder,
 		EncodeDuration:      zapcore.NanosDurationEncoder,
 		EncodeCaller:        zapcore.ShortCallerEncoder,
@@ -65,7 +67,6 @@ func getConsoleCore() zapcore.Core {
 
 func getJSONCore() zapcore.Core {
 	cfg := getEncoderConfig()
-	cfg.EncodeLevel = zapcore.CapitalLevelEncoder
 
 	file, err := os.Create(os.Getenv("LOG_FILE"))
 	if err != nil {
@@ -79,7 +80,7 @@ func getJSONCore() zapcore.Core {
 	)
 }
 
-func New() *Logger {
+func New() Logger {
 	cores := []zapcore.Core{
 		getConsoleCore(),
 		getJSONCore(),
@@ -87,5 +88,5 @@ func New() *Logger {
 
 	core := zapcore.NewTee(cores...)
 
-	return &Logger{zap.New(core).Sugar()}
+	return Logger{zap.New(core).Sugar()}
 }

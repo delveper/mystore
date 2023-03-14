@@ -15,29 +15,29 @@ import (
 const defaultTimeout = 15 * time.Second
 
 type Server struct {
-	srv *http.Server
-	log *lgr.Logger
+	server *http.Server
+	logger lgr.Logger
 }
 
-func NewServer(hdl http.Handler, log *lgr.Logger) (*Server, error) {
+func NewServer(hdl http.Handler, logger lgr.Logger) (Server, error) {
 	addr := os.Getenv("SRV_HOST") + ":" + os.Getenv("SRV_PORT")
 
 	readTimeout, err := time.ParseDuration(os.Getenv("SRV_READ_TIMEOUT"))
 	if err != nil {
-		return nil, fmt.Errorf("parse read timeout: %w", err)
+		return Server{}, fmt.Errorf("parsing read timeout: %w", err)
 	}
 
 	writeTimeout, err := time.ParseDuration(os.Getenv("SRV_WRITE_TIMEOUT"))
 	if err != nil {
-		return nil, fmt.Errorf("parse write timeout: %w", err)
+		return Server{}, fmt.Errorf("parsing write timeout: %w", err)
 	}
 
 	idleTimeout, err := time.ParseDuration(os.Getenv("SRV_IDLE_TIMEOUT"))
 	if err != nil {
-		return nil, fmt.Errorf("parse idle timeout: %w", err)
+		return Server{}, fmt.Errorf("parsing idle timeout: %w", err)
 	}
 
-	srv := &http.Server{
+	srv := http.Server{
 		Addr:         addr,
 		ReadTimeout:  readTimeout,
 		WriteTimeout: writeTimeout,
@@ -45,16 +45,16 @@ func NewServer(hdl http.Handler, log *lgr.Logger) (*Server, error) {
 		Handler:      hdl,
 	}
 
-	return &Server{
-		srv: srv,
-		log: log,
+	return Server{
+		server: &srv,
+		logger: logger,
 	}, nil
 }
 
 func (s *Server) Serve() (err error) {
 	go func() {
-		if e := s.srv.ListenAndServe(); e != nil {
-			err = fmt.Errorf("serving: %v", err)
+		if e := s.server.ListenAndServe(); e != nil {
+			err = fmt.Errorf("serving: %w", e)
 		}
 	}()
 
@@ -65,11 +65,11 @@ func (s *Server) Serve() (err error) {
 	ctx, cancel := context.WithTimeout(context.Background(), defaultTimeout)
 	defer cancel()
 
-	if e := s.srv.Shutdown(ctx); e != nil {
-		err = fmt.Errorf("shutting down server: %v", err)
+	if e := s.server.Shutdown(ctx); e != nil {
+		err = fmt.Errorf("shutting down server: %w", e)
 	}
 
-	s.log.Info("Shutting down gracefully.")
+	s.logger.Info("Shutting down gracefully.")
 
 	return
 }
