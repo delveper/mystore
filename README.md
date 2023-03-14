@@ -16,11 +16,12 @@ API based on REST and Clean Architecture principles.
 erDiagram
     merchants {
         int id PK
-        string merchant_name
+        string name
         int phone
         string password
         string email
         timestamp created_at
+        timestamp deleted_at
     }
 
     customers {
@@ -30,6 +31,7 @@ erDiagram
         string email
         string password
         timestamp created_at
+        timestamp deleted_at
     }
 
     products {
@@ -40,6 +42,7 @@ erDiagram
         bigint price
         products_status status
         timestamp created_at
+        timestamp deleted_at
     }
 
     orders {

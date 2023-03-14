@@ -3,6 +3,7 @@ package rest
 import (
 	"net/http"
 
+	"github.com/delveper/mystore/app/exceptions"
 	"github.com/delveper/mystore/lib/lgr"
 )
 
@@ -30,29 +31,29 @@ func WithCORS(hdl http.Handler) http.Handler {
 		rw.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
 
 		if req.Method == "OPTIONS" {
-			respondHTTPErr(rw, req, http.StatusNoContent)
+			respond(rw, req, http.StatusNoContent, nil)
 			return
 		}
 
 		hdl.ServeHTTP(rw, req)
 	})
 }
+func isAdmin(userName, password string) bool {
+	return true
+}
 
 func WithAuth(hdl http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		username, password, ok := req.BasicAuth()
+		userName, password, ok := req.BasicAuth()
 		if !ok {
 			rw.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			rw.WriteHeader(http.StatusUnauthorized)
-
+			respond(rw, req, http.StatusUnauthorized, exceptions.ErrNotAuthorized)
 			return
 		}
 
-		_, _ = username, password
-
-		if false {
+		if isAdmin(userName, password) {
 			rw.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			rw.WriteHeader(http.StatusUnauthorized)
+			respond(rw, req, http.StatusUnauthorized, exceptions.ErrNotAuthorized)
 
 			return
 		}

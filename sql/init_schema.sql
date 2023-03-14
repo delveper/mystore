@@ -8,12 +8,13 @@ CREATE TYPE order_status AS ENUM ( 'pending', 'processing', 'shipped', 'delivere
 
 CREATE TABLE merchants
 (
-    id            SERIAL PRIMARY KEY,
-    merchant_name VARCHAR(255),
-    phone         INT UNIQUE          NOT NULL,
-    password      VARCHAR(255)        NOT NULL,
-    email         VARCHAR(255) UNIQUE NOT NULL,
-    created_at    TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+    id         SERIAL PRIMARY KEY,
+    name       VARCHAR(255),
+    phone      INT UNIQUE          NOT NULL,
+    password   VARCHAR(255)        NOT NULL,
+    email      VARCHAR(255) UNIQUE NOT NULL,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    deleted_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL
 );
 
 CREATE TABLE customers
@@ -23,18 +24,20 @@ CREATE TABLE customers
     phone      INT UNIQUE          NOT NULL,
     email      VARCHAR(255) UNIQUE NOT NULL,
     password   VARCHAR(255)        NOT NULL,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    deleted_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL
 );
 
 CREATE TABLE products
 (
     id          SERIAL PRIMARY KEY,
-    merchant_id SERIAL NOT NULL references merchants (id) ON DELETE CASCADE,
+    merchant_id SERIAL NOT NULL references merchants (id),
     name        VARCHAR(255),
     description TEXT,
     price       BIGINT CHECK (price > 0),
     status      products_status,
-    created_at  TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+    created_at  TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    deleted_at  TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL
 );
 
 CREATE INDEX IF NOT EXISTS product_id ON products USING BTREE (id);
@@ -44,11 +47,11 @@ CREATE INDEX IF NOT EXISTS product_name ON products USING GIN (to_tsvector('simp
 
 CREATE TABLE orders
 (
-    id         SERIAL PRIMARY key,
-    customer_id   INT NOT NULL REFERENCES customers (id),
-    status     order_status,
-    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
-    deleted_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL
+    id          SERIAL PRIMARY key,
+    customer_id INT NOT NULL REFERENCES customers (id),
+    status      order_status,
+    created_at  TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    deleted_at  TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL
 );
 
 CREATE TABLE order_items
