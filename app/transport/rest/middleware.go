@@ -30,7 +30,7 @@ func WithCORS(hdl http.Handler) http.Handler {
 		rw.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
 
 		if req.Method == "OPTIONS" {
-			respond(rw, req, http.StatusNoContent, nil)
+			respond(rw, http.StatusNoContent, nil)
 
 			return
 		}
@@ -44,7 +44,7 @@ func WithAuth(hdl http.Handler) http.Handler {
 		userName, password, ok := req.BasicAuth()
 		if !ok || !isAuth(userName, password) {
 			rw.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			respond(rw, req, http.StatusUnauthorized, exceptions.ErrNotAuthorized)
+			respond(rw, http.StatusUnauthorized, exceptions.ErrNotAuthorized)
 
 			return
 		}

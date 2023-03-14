@@ -15,6 +15,9 @@ import (
 // The ProductRepo interface is responsible for defining the methods
 // that interact with the database or any other storage mechanism
 // used by the application to store and retrieve product data.
+// The implementation of these methods is delegated to the repository layer,
+// which can be swapped out and replaced with another implementation
+// without affecting the business logic of the application.
 type ProductRepo interface {
 	Insert(context.Context, entities.Product) error
 	Select(context.Context, entities.Product) (*entities.Product, error)
