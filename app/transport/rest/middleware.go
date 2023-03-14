@@ -6,9 +6,9 @@ import (
 	"github.com/delveper/mystore/lib/lgr"
 )
 
-func ChainMiddlewares(hdl http.Handler, mds ...func(http.Handler) http.Handler) http.Handler {
-	for i := len(mds) - 1; i >= 0; i-- { // LIFO order
-		hdl = mds[i](hdl)
+func ChainMiddlewares(hdl http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
+	for i := len(middlewares) - 1; i >= 0; i-- { // LIFO order
+		hdl = middlewares[i](hdl)
 	}
 
 	return hdl

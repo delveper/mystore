@@ -2,11 +2,11 @@ package rest
 
 import "net/http"
 
-func NewMux(hds ...func(mux *http.ServeMux)) *http.ServeMux {
+func NewMux(routes ...func(*http.ServeMux)) *http.ServeMux {
 	mux := http.NewServeMux()
 
-	for i := range hds {
-		hds[i](mux)
+	for i := range routes {
+		routes[i](mux)
 	}
 
 	return mux
