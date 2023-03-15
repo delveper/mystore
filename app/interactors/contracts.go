@@ -19,7 +19,7 @@ import (
 // which can be swapped out and replaced with another implementation
 // without affecting the business logic of the application.
 type ProductRepo interface {
-	Insert(context.Context, entities.Product) error
+	Insert(context.Context, entities.Product) (id int, err error)
 	Select(context.Context, entities.Product) (*entities.Product, error)
 	SelectMany(context.Context) ([]entities.Product, error)
 	Update(context.Context, entities.Product) error

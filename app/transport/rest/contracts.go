@@ -7,7 +7,7 @@ import (
 )
 
 type ProductLogic interface {
-	Add(context.Context, entities.Product) error
+	Add(context.Context, entities.Product) (id int, err error)
 	Find(context.Context, entities.Product) (*entities.Product, error)
 	FindMany(context.Context) ([]entities.Product, error)
 	Modify(context.Context, entities.Product) error

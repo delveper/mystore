@@ -19,7 +19,7 @@ func NewProductInteractor(repo ProductRepo, logger lgr.Logger) ProductInteractor
 	}
 }
 
-func (p *ProductInteractor) Add(ctx context.Context, prod entities.Product) error {
+func (p *ProductInteractor) Add(ctx context.Context, prod entities.Product) (int, error) {
 	return p.repo.Insert(ctx, prod)
 }
 

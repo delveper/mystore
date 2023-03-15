@@ -30,17 +30,15 @@ type Product struct {
 	DeletedAt   *time.Time     `json:"deleted_at,omitempty"`
 }
 
-// Validate checks if Product
-// has appropriate field values
-// and gather all possible errors.
-func (p *Product) Validate() error {
+// OK checks if Product has valid field values and gather all possible errors.
+func (p *Product) OK() error {
 	var errList []error
 
 	if p.ID < 0 {
 		errList = append(errList, errors.New("id must be a positive integer"))
 	}
 
-	if p.MerchantID <= 0 {
+	if p.MerchantID < 0 {
 		errList = append(errList, errors.New("merchant_id must be a positive integer"))
 	}
 
