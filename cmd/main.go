@@ -36,11 +36,11 @@ func main() {
 	)
 
 	// Chain Middleware
-	hdl := rest.ChainMiddlewares(mux,
-		rest.WithLogRequest(logger),
-		rest.WithAuth,
-		rest.WithJSON,
-		rest.WithCORS,
+	hdl := rest.ChainMiddlewares(mux, // order matters
+		rest.WithLogRequest(logger), // It makes sense to log the request before any other middleware runs
+		rest.WithCORS,               // should run early on, so that the appropriate headers can be set to allow cross-origin requests
+		rest.WithAuth,               // should run after WithCORS, since authentication headers should be allowed by CORS
+		rest.WithJSON,               // run last, so that it can wrap the final response in JSON format
 	)
 
 	// Serve server
@@ -49,8 +49,8 @@ func main() {
 		logger.Fatalf("Failed creating server: %v", err)
 	}
 
-	addr := os.Getenv("SRV_PORT")
-	logger.Infof("Server is starting on port %v", addr)
+	port := os.Getenv("SRV_PORT")
+	logger.Infof("Server is starting on port: %v", port)
 
 	if err := srv.Serve(); err != nil {
 		logger.Errorf("Failed running server: %v", err)

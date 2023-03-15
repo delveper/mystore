@@ -24,12 +24,12 @@ func WithJSON(hdl http.Handler) http.Handler {
 
 func WithCORS(hdl http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.Header().Set("Access-Control-Allow-Origin", "*")
+		rw.Header().Set("Access-Control-Allow-Origin", req.Header.Get("Origin"))
 		rw.Header().Set("Access-Control-Allow-Credentials", "true")
 		rw.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization")
 		rw.Header().Set("Access-Control-Allow-Methods", "POST, GET, PUT, DELETE, OPTIONS")
 
-		if req.Method == "OPTIONS" {
+		if req.Method == http.MethodOptions {
 			respond(rw, http.StatusNoContent, nil)
 
 			return
