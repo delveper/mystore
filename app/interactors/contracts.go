@@ -3,6 +3,7 @@
 // The usecase interactors layer is an essential part of this architecture as it ensures
 // that the business rules are implemented consistently and independently of any other part of the application.
 // The interactors would call the entities to fulfill a use case, where a use case might be something like create, purchase, order .
+// It's worth noting that we don't have any business-specific heavy-weight logic from the start.
 
 package interactors
 
