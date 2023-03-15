@@ -107,52 +107,32 @@ Flattened structure will look like this.
 
 
 ## Graph 
-
 ```mermaid
-graph LR;
-    subgraph Entities
-        E1[User]
-        E2[Product]
+graph TD;
+  subgraph "Interactors Layer"
+    PI((ProductInteractor)) -->|uses| PR(ProductRepo)
+    PI -->|uses| L(Logger)
+    subgraph "Entities Layer"
+      E(Product) --- PI
     end
-    subgraph Interactors
-        IU1[UserInteractor]
-        IP1[ProductInteractor]
+  end
+
+  subgraph "Repository Layer"
+    PR -->|implements| PIR(ProductRepoImpl)
+    subgraph "Database Layer"
+      D(Database) --- PIR
     end
-    subgraph Repository
-        R1[PostgreSQL DB]
-        R2[Database Connection]
-    end
-    subgraph InterfaceAdapters
-        subgraph Controllers
-            C1[UserController]
-            C2[ProductController]
-        end
-        subgraph Presenters
-            P1[UserPresenter]
-            P2[ProductPresenter]
-        end
-    end
-    subgraph Infrastructure
-        IN1[Logger]
-        IN2[Exception]
-    end
-    subgraph Transport
-        T1[RESTful HTTP]
+  end
+
+  subgraph "Transport Layer"
+    subgraph "API Handlers"
+      H1[HTTP Handler 1] -->|uses| PI
+      H2[HTTP Handler 2] -->|uses| PI
     end
 
-    E1 --> IU1
-    E2 --> IP1
-    IU1 --> R1
-    IP1 --> R1
-    R2 --> R1
-    R1 --> IU1
-    R1 --> IP1
-    IU1 --> C1
-    IP1 --> C2
-    C1 --> P1
-    C2 --> P2
-    P1 --> T1
-    P2 --> T1
-    IN1 --> T1
-    IN2 --> T1
+    subgraph "Router"
+      R[HTTP Router] -->|routes| H1
+      R -->|routes| H2
+    end
+  end
 ```
