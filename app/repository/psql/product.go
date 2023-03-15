@@ -10,8 +10,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Product represents the PostgresSQL implementation
+// of the product repository and satisfies interactors.ProductRepo interface.
 type Product struct{ *sql.DB }
 
+// Insert adds a new entities.Product to the database.
 func (r *Product) Insert(ctx context.Context, prod entities.Product) (int, error) {
 	const SQL = `INSERT INTO products(merchant_id, name, description, price, status) 
 				 VALUES ($1, $2, $3, $4, $5) 
@@ -31,6 +34,7 @@ func (r *Product) Insert(ctx context.Context, prod entities.Product) (int, error
 	return prod.ID, nil
 }
 
+// Select retrieves an entities.Product from the database by ID.
 func (r *Product) Select(ctx context.Context, prod entities.Product) (*entities.Product, error) {
 	const SQL = ` SELECT id, merchant_id, name, description, price, status, created_at, deleted_at 
 				  FROM products 
@@ -52,6 +56,7 @@ func (r *Product) Select(ctx context.Context, prod entities.Product) (*entities.
 	return &prod, nil
 }
 
+// SelectMany retrieves all entities.Product from the database.
 func (r *Product) SelectMany(ctx context.Context) ([]entities.Product, error) {
 	const SQL = `SELECT id, merchant_id, name, description, price, status, created_at, deleted_at 
 			  	 FROM products` // There is a room for improvement we can add WHERE clause alongside with OFFSET and LIMIT
@@ -83,6 +88,7 @@ func (r *Product) SelectMany(ctx context.Context) ([]entities.Product, error) {
 	return prods, nil
 }
 
+// Update modifies an existing entities.Product in the database.
 func (r *Product) Update(ctx context.Context, prod entities.Product) error {
 	SQL := `UPDATE products 
 			SET merchant_id=$1, name=$2, description=$3, price=$4, status=$5
@@ -107,6 +113,7 @@ func (r *Product) Update(ctx context.Context, prod entities.Product) error {
 	return nil
 }
 
+// Delete softly removes existing entities.Product from database.
 func (r *Product) Delete(ctx context.Context, prod entities.Product) error {
 	const SQL = `UPDATE products
 				 SET deleted_at = now()
