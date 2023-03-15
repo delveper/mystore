@@ -1,3 +1,0 @@
-{"level":"INFO","time":"2023-03-15T09:03:51.102+0200","message":"Server is starting on port: 8888"}
-{"level":"INFO","time":"2023-03-15T09:04:12.459+0200","message":"Shutting down gracefully."}
-{"level":"ERROR","time":"2023-03-15T09:04:12.460+0200","message":"Failed running server: serving: http: Server closed"}
