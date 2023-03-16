@@ -6,6 +6,26 @@ API based on REST and Clean Architecture principles.
 
 [Test-Task](TT.md)
 
+## Usage
+
+```shell
+make docker # Build and deploy docker image with Postgres  
+```
+
+```shell
+make run # Run server
+```
+
+```shell
+make test # Run test
+```
+
+```shell
+make bench # Run benchmark for task* (separate PR)
+```
+
+
+
 ## SQL
 
 [Script](./sql/init_schema.sql) will be initialized upon deploying the Postgres image.
@@ -105,8 +125,8 @@ Flattened structure will look like this.
 | `/orders/:id`    | `PUT`    | Updates the order by id                 |
 | `/orders/:id`    | `DELETE` | Deletes the order by id                 |
 
-
-## Graph 
+## Graph
+not finished...
 ```mermaid
 graph TD;
   subgraph "Interactors Layer"
@@ -118,7 +138,7 @@ graph TD;
   end
 
   subgraph "Repository Layer"
-    PR -->|implements| PIR(ProductRepoImpl)
+    PR -->|implements| PIR(ProductRepo)
     subgraph "Database Layer"
       D(Database) --- PIR
     end
