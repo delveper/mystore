@@ -29,7 +29,7 @@ func NewServer(hdl http.Handler, logger lgr.Logger) (Server, error) {
 
 	readTimeout, err := time.ParseDuration(os.Getenv("SRV_READ_TIMEOUT"))
 	if err != nil {
-		return Server{}, fmt.Errorf("parsing read timeout: %w", err)
+		return Server{}, fmt.Errorf("parsing Read timeout: %w", err)
 	}
 
 	writeTimeout, err := time.ParseDuration(os.Getenv("SRV_WRITE_TIMEOUT"))

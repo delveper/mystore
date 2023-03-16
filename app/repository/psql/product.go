@@ -38,7 +38,7 @@ func (p Product) Insert(ctx context.Context, prod entities.Product) (int, error)
 		}
 
 		var pgxErr *pgconn.PgError
-		if errors.As(err, &pgxErr); pgxErr.ConstraintName == constraintMerchantID {
+		if errors.As(err, &pgxErr); pgxErr != nil && pgxErr.ConstraintName == constraintMerchantID {
 			return 0, fmt.Errorf("%w: %w", exceptions.ErrMerchantNotFound, err)
 		}
 

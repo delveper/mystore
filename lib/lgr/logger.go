@@ -22,6 +22,7 @@ type Logger struct{ *zap.SugaredLogger }
 
 func getLevel() zapcore.Level {
 	lvl := os.Getenv("LOG_LEVEL")
+
 	switch strings.ToUpper(lvl) {
 	case DebugLevel:
 		return zapcore.DebugLevel
@@ -85,7 +86,10 @@ func getJSONCore() zapcore.Core {
 func New() Logger {
 	cores := []zapcore.Core{
 		getConsoleCore(),
-		getJSONCore(),
+	}
+
+	if ok := os.Getenv("LOG_TO_FILE"); strings.ToUpper(ok) == "TRUE" {
+		cores = append(cores, getJSONCore())
 	}
 
 	core := zapcore.NewTee(cores...)

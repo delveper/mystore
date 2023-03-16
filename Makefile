@@ -1,4 +1,4 @@
-.PHONY:run bench
+.PHONY:run test bench docker-build docker-logs docker-build-verbose docker-rebuild docker-up docker-start docker-down docker-clean docker-stop docker-restart
 
 ENV := .env
 include $(ENV)
@@ -7,6 +7,8 @@ include $(ENV)
 run:
 	go run ./cmd/main.go
 
+test:
+	go test ./...
 
 # Docker
 DOCKER_CONFIG_FLAGS := --file $(DOCKER_COMPOSE_FILE) --env-file $(ENV) --log-level $(LOG_LEVEL)

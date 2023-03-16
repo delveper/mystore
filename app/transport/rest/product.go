@@ -71,7 +71,7 @@ func convertProductsToDTO(prods ...entities.Product) []ProductDTO {
 	return res
 }
 
-func (p Product) create(rw http.ResponseWriter, req *http.Request) {
+func (p Product) Create(rw http.ResponseWriter, req *http.Request) {
 	var prod entities.Product
 	if err := decodeBody(req, &prod); err != nil {
 		respond(rw, http.StatusBadRequest, exceptions.ErrInvalidData)
@@ -115,14 +115,12 @@ func (p Product) create(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	data := Response{Message: "Product created.", Details: fmt.Sprintf("id: %d", id)}
-	if err := encodeBody(rw, data); err != nil {
-		p.logger.Errorw("Failed to encode response body.", "error", err)
-	}
 
+	respond(rw, http.StatusCreated, data)
 	p.logger.Debugw(data.Message, "id", id)
 }
 
-func (p Product) read(rw http.ResponseWriter, req *http.Request) {
+func (p Product) Read(rw http.ResponseWriter, req *http.Request) {
 	prod, ok := getProductEntity(req.Context())
 	if !ok {
 		respond(rw, http.StatusInternalServerError, exceptions.ErrInvalidData)
@@ -134,10 +132,10 @@ func (p Product) read(rw http.ResponseWriter, req *http.Request) {
 	res := convertProductsToDTO(*prod)
 
 	respond(rw, http.StatusOK, res[0])
-	p.logger.Debugw("Product read successfully.")
+	p.logger.Debugw("Product Read successfully.")
 }
 
-func (p Product) readAll(rw http.ResponseWriter, req *http.Request) {
+func (p Product) ReadAll(rw http.ResponseWriter, req *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), queryTimeout)
 	defer cancel()
 
@@ -162,10 +160,10 @@ func (p Product) readAll(rw http.ResponseWriter, req *http.Request) {
 	}{convertProductsToDTO(prods...)}
 
 	respond(rw, http.StatusOK, res)
-	p.logger.Debugw("Products read successfully.")
+	p.logger.Debugw("Products Read successfully.")
 }
 
-func (p Product) update(rw http.ResponseWriter, req *http.Request) {
+func (p Product) Update(rw http.ResponseWriter, req *http.Request) {
 	prod, ok := getProductEntity(req.Context())
 	if !ok {
 		respond(rw, http.StatusInternalServerError, exceptions.ErrNotFound)
@@ -213,7 +211,7 @@ func (p Product) update(rw http.ResponseWriter, req *http.Request) {
 			respond(rw, http.StatusInternalServerError, exceptions.ErrUnexpected)
 		}
 
-		p.logger.Errorw("Failed to update product.", "error", err)
+		p.logger.Errorw("Failed to Update product.", "error", err)
 
 		return
 	}
@@ -222,7 +220,7 @@ func (p Product) update(rw http.ResponseWriter, req *http.Request) {
 	p.logger.Debugw("Product updated successfully.", "product", prod)
 }
 
-func (p Product) delete(rw http.ResponseWriter, req *http.Request) {
+func (p Product) Delete(rw http.ResponseWriter, req *http.Request) {
 	prod, ok := getProductEntity(req.Context())
 	if !ok {
 		respond(rw, http.StatusInternalServerError, exceptions.ErrNotFound)
@@ -245,7 +243,7 @@ func (p Product) delete(rw http.ResponseWriter, req *http.Request) {
 			respond(rw, http.StatusInternalServerError, exceptions.ErrUnexpected)
 		}
 
-		p.logger.Errorw("Failed to delete product.", "error", err)
+		p.logger.Errorw("Failed to Delete product.", "error", err)
 	}
 
 	p.logger.Debugw("Product deleted", "id", id)
@@ -257,13 +255,10 @@ func (p Product) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if req.URL.Path == "" {
 		switch req.Method {
 		case http.MethodPost:
-			p.logger.Infof("empty path: create")
-			p.create(rw, req)
+			p.Create(rw, req)
 		case http.MethodGet:
-			p.logger.Infof("empty path: readAll")
-			p.readAll(rw, req)
+			p.ReadAll(rw, req)
 		default:
-			p.logger.Infof("empty path: wrong method")
 			respond(rw, http.StatusMethodNotAllowed, nil)
 		}
 
@@ -288,7 +283,7 @@ func (p Product) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		case errors.Is(err, context.DeadlineExceeded):
 			respond(rw, http.StatusGatewayTimeout, exceptions.ErrDeadline)
 		case errors.Is(err, exceptions.ErrNotFound):
-			respond(rw, http.StatusNotFound, exceptions.ErrNotFound)
+			respond(rw, http.StatusNotFound, nil)
 		default:
 			respond(rw, http.StatusInternalServerError, exceptions.ErrUnexpected)
 		}
@@ -303,16 +298,12 @@ func (p Product) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	// Handle path with ID
 	switch req.Method {
 	case http.MethodGet:
-		p.logger.Infof("path ID: read")
-		p.read(rw, req)
+		p.Read(rw, req)
 	case http.MethodPut:
-		p.logger.Infof("path ID: update")
-		p.update(rw, req)
+		p.Update(rw, req)
 	case http.MethodDelete:
-		p.logger.Infof("path ID: delete")
-		p.delete(rw, req)
+		p.Delete(rw, req)
 	default:
-		p.logger.Infof("path ID: method not allowed")
 		respond(rw, http.StatusMethodNotAllowed, nil)
 	}
 }

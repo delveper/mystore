@@ -74,6 +74,7 @@ func WithoutPanic(logger lgr.Logger) func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			defer func() {
 				if err := recover(); err != nil {
+					respond(rw, http.StatusInternalServerError, nil)
 					logger.Errorw("Recovered from panic.", "error", err)
 				}
 			}()
