@@ -3,12 +3,11 @@ package rest
 import (
 	"net/http"
 
-	"github.com/delveper/mystore/app/exceptions"
 	"github.com/delveper/mystore/lib/lgr"
 )
 
 func ChainMiddlewares(hdl http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
-	for i := len(middlewares) - 1; i >= 0; i-- { // LIFO order
+	for i := len(middlewares) - 1; i >= 0; i-- { // LIFO
 		hdl = middlewares[i](hdl)
 	}
 
@@ -42,9 +41,9 @@ func WithCORS(hdl http.Handler) http.Handler {
 func WithAuth(hdl http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		userName, password, ok := req.BasicAuth()
-		if !ok || !isAuth(userName, password) {
+		if !(ok && isAuth(userName, password)) {
 			rw.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
-			respond(rw, http.StatusUnauthorized, exceptions.ErrNotAuthorized)
+			respond(rw, http.StatusUnauthorized, nil)
 
 			return
 		}
@@ -63,6 +62,21 @@ func WithLogRequest(logger lgr.Logger) func(http.Handler) http.Handler {
 				"user-agent", req.UserAgent(),
 				"remote", req.RemoteAddr,
 			)
+
+			hdl.ServeHTTP(rw, req)
+		})
+	}
+}
+
+// WithoutPanic recovers in case panic, but we won't panic.
+func WithoutPanic(logger lgr.Logger) func(http.Handler) http.Handler {
+	return func(hdl http.Handler) http.Handler {
+		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+			defer func() {
+				if err := recover(); err != nil {
+					logger.Errorw("Recovered from panic.", "error", err)
+				}
+			}()
 
 			hdl.ServeHTTP(rw, req)
 		})

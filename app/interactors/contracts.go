@@ -24,5 +24,5 @@ type ProductRepo interface {
 	Select(context.Context, entities.Product) (*entities.Product, error)
 	SelectMany(context.Context) ([]entities.Product, error)
 	Update(context.Context, entities.Product) error
-	Delete(context.Context, entities.Product) error
+	Delete(context.Context, entities.Product) (id int, err error)
 }

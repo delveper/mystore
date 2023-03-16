@@ -3,6 +3,7 @@ package entities
 import (
 	"errors"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -20,20 +21,21 @@ const (
 )
 
 type Product struct {
-	ID          int            `json:"id"`
-	MerchantID  int            `json:"merchant_id"`
-	Name        string         `json:"name"`
-	Description string         `json:"description"`
-	Price       int64          `json:"price"`
-	Status      ProductsStatus `json:"status"`
-	CreatedAt   time.Time      `json:"created_at"`
-	DeletedAt   *time.Time     `json:"deleted_at,omitempty"`
+	ID          int             `json:"id"`
+	MerchantID  int             `json:"merchant_id"`
+	Name        string          `json:"name"`
+	Description string          `json:"description"`
+	Price       int64           `json:"price"`
+	Status      *ProductsStatus `json:"status"`
+	CreatedAt   time.Time       `json:"created_at"`
+	DeletedAt   *time.Time      `json:"deleted_at,omitempty"`
 }
 
 // OK checks if Product has valid field values and gather all possible errors.
 func (p *Product) OK() error {
 	var errList []error
 
+	log.Println(p.ID)
 	if p.ID < 0 {
 		errList = append(errList, errors.New("id must be a positive integer"))
 	}
@@ -52,13 +54,6 @@ func (p *Product) OK() error {
 
 	if p.Price <= 0 {
 		errList = append(errList, errors.New("price must be a positive integer"))
-	}
-
-	switch p.Status {
-	case OutOfStock, InStock, RunningLow:
-
-	default:
-		errList = append(errList, fmt.Errorf("status must be %v | %v | %v", OutOfStock, InStock, RunningLow))
 	}
 
 	return errors.Join(errList...)

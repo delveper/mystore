@@ -7,25 +7,39 @@ import (
 
 	"github.com/delveper/mystore/app/entities"
 	"github.com/delveper/mystore/app/exceptions"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/pkg/errors"
 )
+
+const constraintMerchantID = "products_merchant_id_fkey"
 
 // Product represents the PostgresSQL implementation
 // of the product repository and satisfies interactors.ProductRepo interface.
 type Product struct{ *sql.DB }
 
+// NewProduct creates a new instance of Product.
+func NewProduct(conn *sql.DB) Product {
+	return Product{conn}
+}
+
 // Insert adds a new entities.Product to the database.
-func (r *Product) Insert(ctx context.Context, prod entities.Product) (int, error) {
-	const SQL = `INSERT INTO products(merchant_id, name, description, price, status) 
+func (p Product) Insert(ctx context.Context, prod entities.Product) (int, error) {
+	const SQL = `INSERT INTO sales.products(merchant_id, name, description, price, status) 
 				 VALUES ($1, $2, $3, $4, $5) 
 				 RETURNING id;`
 
-	row := r.DB.QueryRowContext(ctx, SQL, prod.MerchantID, prod.Name, prod.Description, prod.Price, prod.Status)
+	row := p.QueryRowContext(ctx, SQL, prod.MerchantID, prod.Name, prod.Description, prod.Price, prod.Status)
 
 	err := row.Scan(&prod.ID)
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return 0, exceptions.ErrRecordNotFound
+			return 0, exceptions.ErrNotFound
+		}
+
+		var pgxErr *pgconn.PgError
+		if errors.As(err, &pgxErr); pgxErr.ConstraintName == constraintMerchantID {
+			return 0, fmt.Errorf("%w: %w", exceptions.ErrMerchantNotFound, err)
 		}
 
 		return 0, fmt.Errorf("inserting product: %w", err)
@@ -35,19 +49,19 @@ func (r *Product) Insert(ctx context.Context, prod entities.Product) (int, error
 }
 
 // Select retrieves an entities.Product from the database by ID.
-func (r *Product) Select(ctx context.Context, prod entities.Product) (*entities.Product, error) {
+func (p Product) Select(ctx context.Context, prod entities.Product) (*entities.Product, error) {
 	const SQL = ` SELECT id, merchant_id, name, description, price, status, created_at, deleted_at 
-				  FROM products 
+				  FROM sales.products 
 				  WHERE id=$1
 				  AND deleted_at IS NULL;`
 
-	row := r.DB.QueryRowContext(ctx, SQL, prod.ID)
+	row := p.QueryRowContext(ctx, SQL, prod.ID)
 
 	err := row.Scan(&prod.ID, &prod.MerchantID, &prod.Name, &prod.Description, &prod.Price, &prod.Status, &prod.CreatedAt, &prod.DeletedAt)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("%w: %w", exceptions.ErrRecordNotFound, err)
+			return nil, fmt.Errorf("%w: %w", exceptions.ErrNotFound, err)
 		}
 
 		return nil, fmt.Errorf("scanning product: %w", err)
@@ -57,11 +71,12 @@ func (r *Product) Select(ctx context.Context, prod entities.Product) (*entities.
 }
 
 // SelectMany retrieves all entities.Product from the database.
-func (r *Product) SelectMany(ctx context.Context) ([]entities.Product, error) {
+func (p Product) SelectMany(ctx context.Context) ([]entities.Product, error) {
 	const SQL = `SELECT id, merchant_id, name, description, price, status, created_at, deleted_at 
-			  	 FROM products` // There is a room for improvement we can add WHERE clause alongside with OFFSET and LIMIT
+			  	 FROM sales.products
+			  	 WHERE deleted_at is NULL;` // There is a room for improvement we can add WHERE clause alongside with OFFSET and LIMIT
 
-	rows, err := r.DB.QueryContext(ctx, SQL)
+	rows, err := p.QueryContext(ctx, SQL)
 	if err != nil {
 		return nil, fmt.Errorf("executing query by selecting products: %w", err)
 	}
@@ -85,17 +100,21 @@ func (r *Product) SelectMany(ctx context.Context) ([]entities.Product, error) {
 		return nil, fmt.Errorf("during iteration products: %w", err)
 	}
 
+	if len(prods) == 0 {
+		return nil, exceptions.ErrNotFound
+	}
+
 	return prods, nil
 }
 
 // Update modifies an existing entities.Product in the database.
-func (r *Product) Update(ctx context.Context, prod entities.Product) error {
-	SQL := `UPDATE products 
+func (p Product) Update(ctx context.Context, prod entities.Product) error {
+	SQL := `UPDATE sales.products 
 			SET merchant_id=$1, name=$2, description=$3, price=$4, status=$5
 			WHERE id=$6
 			AND deleted_at IS NULL;`
 
-	result, err := r.DB.ExecContext(ctx, SQL, prod.MerchantID, prod.Name, prod.Description, prod.Price, prod.Status, prod.ID)
+	result, err := p.ExecContext(ctx, SQL, prod.MerchantID, prod.Name, prod.Description, prod.Price, prod.Status, prod.ID)
 
 	if err != nil {
 		return fmt.Errorf("updating product: %w", err)
@@ -107,30 +126,30 @@ func (r *Product) Update(ctx context.Context, prod entities.Product) error {
 	}
 
 	if n == 0 {
-		return fmt.Errorf("product with id %v not found: %w", prod.ID, exceptions.ErrRecordNotFound)
+		return fmt.Errorf("product with id %v not found: %w", prod.ID, exceptions.ErrNotFound)
 	}
 
 	return nil
 }
 
 // Delete softly removes existing entities.Product from database.
-func (r *Product) Delete(ctx context.Context, prod entities.Product) error {
-	const SQL = `UPDATE products
+func (p Product) Delete(ctx context.Context, prod entities.Product) (int, error) {
+	const SQL = `UPDATE sales.products
 				 SET deleted_at = now()
        		  	 WHERE id=$1
 				 AND deleted_at IS NULL
 				 RETURNING id;`
 
-	row := r.DB.QueryRowContext(ctx, SQL, prod.ID)
+	row := p.QueryRowContext(ctx, SQL, prod.ID)
 
 	err := row.Scan(&prod.ID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return exceptions.ErrRecordNotFound
+			return 0, exceptions.ErrNotFound
 		}
 
-		return fmt.Errorf("deleting product: %w", err)
+		return 0, fmt.Errorf("deleting product: %w", err)
 	}
 
-	return nil
+	return prod.ID, nil
 }

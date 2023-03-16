@@ -35,7 +35,7 @@ CREATE TABLE products
     name        VARCHAR(255),
     description TEXT,
     price       BIGINT CHECK (price > 0),
-    status      products_status,
+    status      products_status             default NULL,
     created_at  TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
     deleted_at  TIMESTAMP WITHOUT TIME ZONE DEFAULT NULL
 );

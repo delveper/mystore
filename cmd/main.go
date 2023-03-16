@@ -4,14 +4,15 @@ import (
 	"log"
 	"os"
 
-	"github.com/delveper/mystore/app/repository/psql"
+	"github.com/delveper/mystore/app/interactors"
+	repo "github.com/delveper/mystore/app/repository/psql"
 	"github.com/delveper/mystore/app/transport/rest"
 	"github.com/delveper/mystore/lib/env"
 	"github.com/delveper/mystore/lib/lgr"
 )
 
 func main() {
-	// Load .env to environment, in case of running locally
+	// Load .env
 	if err := env.LoadVars(); err != nil {
 		log.Fatal(err)
 	}
@@ -20,30 +21,34 @@ func main() {
 	logger := lgr.New()
 
 	// Database connection
-	db, err := psql.Connect()
+	conn, err := repo.Connect()
 	if err != nil {
 		logger.Fatalf("Failed establishing database connection: %v", err)
 	}
 
-	_ = db
+	// Repo
+	prodRepo := repo.NewProduct(conn)
 
-	// Mux handlers
-	prod := rest.NewProduct(nil, logger)
+	// Interactor
+	prodInter := interactors.NewProductInteractor(prodRepo, logger)
 
-	mux := rest.NewMux(
-		prod.Route,
-		// to be continue...
+	// Handler
+	prodREST := rest.NewProduct(prodInter, logger)
+
+	// Mux
+	mux := rest.NewMux(prodREST.Route) // routes all endpoints
+
+	// Middleware
+	hdl := rest.ChainMiddlewares(mux,
+		// top to bottom execution order
+		rest.WithLogRequest(logger),
+		rest.WithCORS,
+		rest.WithJSON,
+		rest.WithAuth,
+		rest.WithoutPanic(logger),
 	)
 
-	// Chain Middleware
-	hdl := rest.ChainMiddlewares(mux, // order matters
-		rest.WithLogRequest(logger), // It makes sense to log the request before any other middleware runs
-		rest.WithCORS,               // should run early on, so that the appropriate headers can be set to allow cross-origin requests
-		rest.WithAuth,               // should run after WithCORS, since authentication headers should be allowed by CORS
-		rest.WithJSON,               // run last, so that it can wrap the final response in JSON format
-	)
-
-	// Serve server
+	// Run server
 	srv, err := rest.NewServer(hdl, logger)
 	if err != nil {
 		logger.Fatalf("Failed creating server: %v", err)

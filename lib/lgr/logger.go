@@ -16,6 +16,8 @@ const (
 	ErrorLevel = "ERROR"
 )
 
+// Logger is wrapper around *zap.SugaredLogger that will handle all logging behavior.
+// Reasonable idea is to implement custom Logger interface that will be used on all layers.
 type Logger struct{ *zap.SugaredLogger }
 
 func getLevel() zapcore.Level {

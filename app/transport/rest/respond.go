@@ -4,8 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-
-	"github.com/delveper/mystore/app/exceptions"
 )
 
 type Response struct {
@@ -39,9 +37,7 @@ func respond(rw http.ResponseWriter, code int, data any) {
 	}
 
 	if data == nil && code != http.StatusNoContent {
-		respond(rw, http.StatusBadRequest, exceptions.ErrInvalidData)
-
-		return
+		data = Response{Message: http.StatusText(code)}
 	}
 
 	if data != nil {
