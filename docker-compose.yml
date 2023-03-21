@@ -1,0 +1,37 @@
+version: "3.9"
+
+services:
+  # MAIN REPO
+  repo:
+    image: ${DB_IMAGE}
+    restart: always
+    container_name: ${APP_NAME}_repo
+    ports:
+      - ${DB_EXPOSE_PORT}:${DB_PORT}
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - repo_data:${DB_DATA}
+      - ${DB_INIT_SCHEMA}:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - mystore
+  # API
+  api:
+    build: .
+    container_name: ${APP_NAME}_api
+    privileged: true
+    ports:
+      - ${SRV_PORT}:${SRV_PORT}
+    depends_on:
+      - repo
+    networks:
+      - mystore
+# VOLUMES
+volumes:
+  repo_data:
+#NETWORKS
+networks:
+  mystore:
+    driver: bridge
