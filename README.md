@@ -2,10 +2,6 @@
 
 API based on REST and Clean Architecture principles.
 
-## Task
-
-[Test-Task](TT.md)
-
 ## Usage
 
 ```shell
