@@ -10,6 +10,9 @@ run:
 test:
 	go test ./...
 
+bench:
+	go test -bench=. -benchmem -count=10
+
 # Docker
 DOCKER_CONFIG_FLAGS := --file $(DOCKER_COMPOSE_FILE) --env-file $(ENV) --log-level $(LOG_LEVEL)
 
